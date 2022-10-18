@@ -10,7 +10,7 @@ namespace Md5
 {
     internal class FileMD5
     {
-        public static string Start(string path)
+        public static string File512(string path)
         {
             using (FileStream fs = System.IO.File.OpenRead(path))
             {
@@ -22,7 +22,7 @@ namespace Md5
                 return result;
             }
         }
-        public static string Start2(string path)
+        public static string LongFile(string path)
         {
             using (var md5 = MD5.Create())
             {
