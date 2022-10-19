@@ -1,4 +1,3 @@
-﻿using Md5;
+﻿using TransferStream;
 
-string thisFileMD5 = FileMD5.LongFile(@"Путь");
-Console.WriteLine("md5 : " + thisFileMD5);
+CopyStream.CopyStreamFolder(new string[] { @"Путь", @"Путь" });
