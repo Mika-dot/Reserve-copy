@@ -131,12 +131,12 @@ namespace BackupSystem
         public static void StartWorking()
         {
             // Здесь запускаем поток.
-            //th = new Thread(new ThreadStart(CHECKER));
-            //th.Start();
+            th = new Thread(new ThreadStart(MAIN));
+            th.Start();
             th2 = new Thread(new ThreadStart(subThreads));
             th2.Start();
         }
-        /*
+
         static bool FileChanged(string filename, DateTime olddate, long oldsize, string oldhash, out DateTime newdate, out long newsize, out string newhash)
         {
             FileInfo inf = new FileInfo(filename);
@@ -169,65 +169,98 @@ namespace BackupSystem
 
             return false;
         }
-        */
-        // Основной поток, который обращается к бд и чекает файлы на изменения.
-        /*
-        static void CHECKER()
+
+        static void MAIN()
         {
             while (true)
             {
-                for (int j = 0; j < jsonDATABASE.ListOfCopying.Count; j++)
-                {
-                    Console.WriteLine("чекаю " + jsonDATABASE.ListOfCopying[j].FromDir);
-                    var arr = jsonDATABASE.ListOfCopying[j].Files.ToArray();
-                    for (int i = 0; i < arr.Length; i++)
-                    {
-                        var file = arr[i];
-                        Console.WriteLine("чекаю файл: " + jsonDATABASE.ListOfCopying[j].FromDir + file.Key);
-                        if (FileChanged(jsonDATABASE.ListOfCopying[j].FromDir + file.Key, file.Value.LastChange, file.Value.Size, file.Value.Hash,
-                                out var newdate, out var newsize, out var newhash))
-                        {
-                            Console.WriteLine("он был изменен.");
-                            var s = jsonDATABASE.ListOfCopying[j].Files[file.Key];
-                            s.LastChange = newdate;
-                            s.Size = newsize;
-                            s.Hash = newhash;
-                            jsonDATABASE.ListOfCopying[j].Files[file.Key] = s;
-                            jsonDATABASE.SaveJSON();
-                            BIRZHA.Enqueue((jsonDATABASE.ListOfCopying[j].FromDir + file.Key, jsonDATABASE.ListOfCopying[j].ToDir + file.Key));
-                        }
-                    }
-                }
-                // Это должны были быть пары (откуда-куда)
-                //(int id, string from, string to)[] Pairs = new (int, string, string)[32];
-                for (int j = 0; j < Pairs.Length; j++)
-                {
-                    // Берем на основании id (из Pairs) новые данные - список файло
-                    //(string name, DateTime date, long size, string hash)[] Datas = new (string, DateTime, long, string)[16];
-
-                    for (int i = 0; i < Datas.Length; i++)
-                    {
-                        // берем конкретную строчку и чекаем ее - смотрим на данные физического файла
-                        //и сверяем с данными из бд.
-                        //т.к. имя файла в бд хранится относительное (относительно корневого каталога)
-                        //то пишется "Pairs[j].from + " или "Pairs[j].to + "
-                        if (FileChanged(Pairs[j].from + Datas[i].name, Datas[i].date, Datas[i].size, Datas[i].hash,
-                            out var newdate, out var newsize, out var newhash))
-                        {
-                            // Файл был изменен. Добавляем пути файлов в биржу, чтоб они потом скопировались.
-                            BIRZHA.Enqueue((Pairs[j].from + Datas[i].name, Pairs[j].to + Datas[i].name));
-                            //Console.WriteLine("новая дата: " + newdate);
-                            //Console.WriteLine("новый размер: " + newsize);
-                            //Console.WriteLine("новый хэш: " + newhash);
-                        }
-
-                    }
-
-                }
+                Add();
+                CHECKER();
                 Thread.Sleep(5000);
             }
         }
-        */
+
+        static void Add()
+        {
+            for (int j = 0; j < jsonDATABASE.ListOfCopying.Count; j++)
+            {
+                //это список физических файлов
+                var from = jsonDATABASE.ListOfCopying[j].FromDir;
+                var existing = Directory.GetFiles(from, "*", SearchOption.AllDirectories).ToList();
+                //а это из бд
+                var arr = jsonDATABASE.ListOfCopying[j].Files.ToArray();
+                for (int i = 0; i < arr.Length; i++)
+                {
+                    var file = arr[i];
+                    //Console.WriteLine("чекаю файл: " + jsonDATABASE.ListOfCopying[j].FromDir + file.Key);
+                    existing.Remove(from + file.Key);
+                }
+                for (int i = 0; i < existing.Count; i++)
+                {
+                    jsonDATABASE.ListOfCopying[j].Files.Add(existing[i].Substring(from.Length), new jsonDATABASE.FileS()
+                    {
+                        Size = 0,
+                        LastChange = DateTime.MinValue,
+                        Hash = ""
+                    });
+                }
+            }
+        }
+
+        // Основной поток, который обращается к бд и чекает файлы на изменения.
+        static void CHECKER()
+        {
+            for (int j = 0; j < jsonDATABASE.ListOfCopying.Count; j++)
+            {
+                Console.WriteLine("чекаю " + jsonDATABASE.ListOfCopying[j].FromDir);
+                var arr = jsonDATABASE.ListOfCopying[j].Files.ToArray();
+                for (int i = 0; i < arr.Length; i++)
+                {
+                    var file = arr[i];
+                    Console.WriteLine("чекаю файл: " + jsonDATABASE.ListOfCopying[j].FromDir + file.Key);
+                    if (File.Exists(jsonDATABASE.ListOfCopying[j].FromDir + file.Key) && FileChanged(jsonDATABASE.ListOfCopying[j].FromDir + file.Key, file.Value.LastChange, file.Value.Size, file.Value.Hash,
+                            out var newdate, out var newsize, out var newhash))
+                    {
+                        Console.WriteLine("он был изменен.");
+                        var s = jsonDATABASE.ListOfCopying[j].Files[file.Key];
+                        s.LastChange = newdate;
+                        s.Size = newsize;
+                        s.Hash = newhash;
+                        jsonDATABASE.ListOfCopying[j].Files[file.Key] = s;
+                        jsonDATABASE.SaveJSON();
+                        BIRZHA.Enqueue((jsonDATABASE.ListOfCopying[j].FromDir + file.Key, jsonDATABASE.ListOfCopying[j].ToDir + file.Key));
+                    }
+                }
+            }
+            /*
+            // Это должны были быть пары (откуда-куда)
+            //(int id, string from, string to)[] Pairs = new (int, string, string)[32];
+            for (int j = 0; j < Pairs.Length; j++)
+            {
+                // Берем на основании id (из Pairs) новые данные - список файло
+                //(string name, DateTime date, long size, string hash)[] Datas = new (string, DateTime, long, string)[16];
+
+                for (int i = 0; i < Datas.Length; i++)
+                {
+                    // берем конкретную строчку и чекаем ее - смотрим на данные физического файла
+                    //и сверяем с данными из бд.
+                    //т.к. имя файла в бд хранится относительное (относительно корневого каталога)
+                    //то пишется "Pairs[j].from + " или "Pairs[j].to + "
+                    if (FileChanged(Pairs[j].from + Datas[i].name, Datas[i].date, Datas[i].size, Datas[i].hash,
+                        out var newdate, out var newsize, out var newhash))
+                    {
+                        // Файл был изменен. Добавляем пути файлов в биржу, чтоб они потом скопировались.
+                        BIRZHA.Enqueue((Pairs[j].from + Datas[i].name, Pairs[j].to + Datas[i].name));
+                        //Console.WriteLine("новая дата: " + newdate);
+                        //Console.WriteLine("новый размер: " + newsize);
+                        //Console.WriteLine("новый хэш: " + newhash);
+                    }
+
+                }
+
+            }
+            */
+        }
 
         static int FreeThreads = 5; // Количество свободных подпотоков.
                                     // Это ещё один поток. Он может сразу же, как в основном потоке заполнится биржа,
@@ -249,25 +282,13 @@ namespace BackupSystem
             void threadToCopy(object arg)
             {
                 var ss = (arg as string[]);
+                if (!Directory.Exists(Path.GetDirectoryName(ss[1])))
+                    Directory.CreateDirectory(Path.GetDirectoryName(ss[1]));
                 if (File.Exists(ss[1])) File.Delete(ss[1]);
                 File.Copy(ss[0], ss[1]);
                 FreeThreads++;
             }
 
-        }
-
-        public static FileSystemWatcher CreateWatcher(int N, string dir)
-        {
-            var fsw = new FileSystemWatcher(dir);
-            fsw.Changed += OnChanged;
-            fsw.Created += OnCreated;
-            fsw.Deleted += OnDeleted;
-            fsw.Renamed += OnRenamed;
-            void OnChanged(object sender, FileSystemEventArgs e) => MessageBox.Show($"Changed: {e.FullPath}");
-            void OnCreated(object sender, FileSystemEventArgs e) => MessageBox.Show($"Created: {e.FullPath}");
-            void OnDeleted(object sender, FileSystemEventArgs e) => MessageBox.Show($"Deleted: {e.FullPath}");
-            void OnRenamed(object sender, RenamedEventArgs e) => MessageBox.Show($"Renamed: {e.OldFullPath} {e.FullPath}");
-            return fsw;
         }
 
     }
@@ -280,13 +301,7 @@ namespace BackupSystem
         {
             if (!File.Exists("database.json")) File.WriteAllText("database.json", "[]");
             ListOfCopying = JsonConvert.DeserializeObject<List<CopyCell>>(File.ReadAllText("database.json"));
-            for (int i = 0; i < ListOfCopying.Count; i++)
-            {
-                var c = ListOfCopying[i];
-                c.fsw = Copying.CreateWatcher(i, c.FromDir);
-                ListOfCopying[i] = c;
-                Form1.comboBox1.Items.Add(c.Name);
-            }
+            for (int i = 0; i < ListOfCopying.Count; i++) Form1.comboBox1.Items.Add(ListOfCopying[i].Name);
         }
 
         public static void SaveJSON() => File.WriteAllText("database.json", JsonConvert.SerializeObject(ListOfCopying, Formatting.Indented));
@@ -313,7 +328,7 @@ namespace BackupSystem
             }
 
         }
-        static void UpdateTODirs(string From, string To)
+        public static void UpdateTODirs(string From, string To)
         {
             var dirs = Directory.GetDirectories(From, "*", SearchOption.AllDirectories);
             for (int i = 0; i < dirs.Length; i++)
@@ -342,7 +357,6 @@ namespace BackupSystem
                     LastChange = inf.LastWriteTime
                 });
             }
-            cell.fsw = Copying.CreateWatcher(ListOfCopying.Count, From);
             ListOfCopying.Add(cell);
             Form1.comboBox1.Items.Add(Name);
             FULLCopy(From, To);
@@ -353,14 +367,12 @@ namespace BackupSystem
         public static void DeletePair(int N)
         {
             Form1.comboBox1.Items.RemoveAt(N);
-            ListOfCopying[N].fsw.Dispose();
             ListOfCopying.RemoveAt(N);
             SaveJSON();
         }
 
         public struct CopyCell
         {
-            public FileSystemWatcher fsw;
             [JsonProperty]
             public string Name, FromDir, ToDir;
             [JsonProperty]
