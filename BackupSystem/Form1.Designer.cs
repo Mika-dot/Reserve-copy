@@ -1,6 +1,6 @@
 ﻿namespace BackupSystem
 {
-    partial class Form1
+    partial class FormBackup
     {
         /// <summary>
         /// Обязательная переменная конструктора.
@@ -33,24 +33,29 @@
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.panel1 = new System.Windows.Forms.Panel();
             this.label3 = new System.Windows.Forms.Label();
-            this.textBox3 = new System.Windows.Forms.TextBox();
-            this.button3 = new System.Windows.Forms.Button();
+            this.CoupleName = new System.Windows.Forms.TextBox();
+            this.buttonAdditions = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.button2 = new System.Windows.Forms.Button();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.button1 = new System.Windows.Forms.Button();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.buttonChoiceTo = new System.Windows.Forms.Button();
+            this.WhereTo = new System.Windows.Forms.TextBox();
+            this.buttonChoiceFor = new System.Windows.Forms.Button();
+            this.Where = new System.Windows.Forms.TextBox();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.button4 = new System.Windows.Forms.Button();
-            this.label7 = new System.Windows.Forms.Label();
+            this.buttonDelete = new System.Windows.Forms.Button();
+            this.labelTo = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
+            this.labelFor = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
-            comboBox1 = new System.Windows.Forms.ComboBox();
+            this.comboBoxFolders = new System.Windows.Forms.ComboBox();
             this.label4 = new System.Windows.Forms.Label();
-            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.Choice = new System.Windows.Forms.TabControl();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.textBoxStreams = new System.Windows.Forms.TextBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.textBoxFrequency = new System.Windows.Forms.TextBox();
+            this.tabPage2.SuspendLayout();
             this.tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -58,11 +63,15 @@
             this.splitContainer1.SuspendLayout();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
-            this.tabControl1.SuspendLayout();
+            this.Choice.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.label7);
+            this.tabPage2.Controls.Add(this.textBoxFrequency);
+            this.tabPage2.Controls.Add(this.label6);
+            this.tabPage2.Controls.Add(this.textBoxStreams);
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Margin = new System.Windows.Forms.Padding(2);
             this.tabPage2.Name = "tabPage2";
@@ -110,14 +119,14 @@
             // 
             this.panel1.BackColor = System.Drawing.Color.Gainsboro;
             this.panel1.Controls.Add(this.label3);
-            this.panel1.Controls.Add(this.textBox3);
-            this.panel1.Controls.Add(this.button3);
+            this.panel1.Controls.Add(this.CoupleName);
+            this.panel1.Controls.Add(this.buttonAdditions);
             this.panel1.Controls.Add(this.label2);
             this.panel1.Controls.Add(this.label1);
-            this.panel1.Controls.Add(this.button2);
-            this.panel1.Controls.Add(this.textBox2);
-            this.panel1.Controls.Add(this.button1);
-            this.panel1.Controls.Add(this.textBox1);
+            this.panel1.Controls.Add(this.buttonChoiceTo);
+            this.panel1.Controls.Add(this.WhereTo);
+            this.panel1.Controls.Add(this.buttonChoiceFor);
+            this.panel1.Controls.Add(this.Where);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Margin = new System.Windows.Forms.Padding(2);
@@ -135,24 +144,24 @@
             this.label3.TabIndex = 8;
             this.label3.Text = "Имя пары:";
             // 
-            // textBox3
+            // CoupleName
             // 
-            this.textBox3.Location = new System.Drawing.Point(72, 10);
-            this.textBox3.Margin = new System.Windows.Forms.Padding(2);
-            this.textBox3.Name = "textBox3";
-            this.textBox3.Size = new System.Drawing.Size(104, 20);
-            this.textBox3.TabIndex = 7;
+            this.CoupleName.Location = new System.Drawing.Point(72, 10);
+            this.CoupleName.Margin = new System.Windows.Forms.Padding(2);
+            this.CoupleName.Name = "CoupleName";
+            this.CoupleName.Size = new System.Drawing.Size(104, 20);
+            this.CoupleName.TabIndex = 7;
             // 
-            // button3
+            // buttonAdditions
             // 
-            this.button3.Location = new System.Drawing.Point(6, 79);
-            this.button3.Margin = new System.Windows.Forms.Padding(2);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(75, 31);
-            this.button3.TabIndex = 6;
-            this.button3.Text = "Добавить";
-            this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.button3_Click);
+            this.buttonAdditions.Location = new System.Drawing.Point(6, 79);
+            this.buttonAdditions.Margin = new System.Windows.Forms.Padding(2);
+            this.buttonAdditions.Name = "buttonAdditions";
+            this.buttonAdditions.Size = new System.Drawing.Size(75, 31);
+            this.buttonAdditions.TabIndex = 6;
+            this.buttonAdditions.Text = "Добавить";
+            this.buttonAdditions.UseVisualStyleBackColor = true;
+            this.buttonAdditions.Click += new System.EventHandler(this.button3_Click);
             // 
             // label2
             // 
@@ -174,53 +183,53 @@
             this.label1.TabIndex = 4;
             this.label1.Text = "Откуда:";
             // 
-            // button2
+            // buttonChoiceTo
             // 
-            this.button2.Location = new System.Drawing.Point(413, 55);
-            this.button2.Margin = new System.Windows.Forms.Padding(2);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(68, 21);
-            this.button2.TabIndex = 3;
-            this.button2.Text = "Выбрать";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
+            this.buttonChoiceTo.Location = new System.Drawing.Point(413, 55);
+            this.buttonChoiceTo.Margin = new System.Windows.Forms.Padding(2);
+            this.buttonChoiceTo.Name = "buttonChoiceTo";
+            this.buttonChoiceTo.Size = new System.Drawing.Size(68, 21);
+            this.buttonChoiceTo.TabIndex = 3;
+            this.buttonChoiceTo.Text = "Выбрать";
+            this.buttonChoiceTo.UseVisualStyleBackColor = true;
+            this.buttonChoiceTo.Click += new System.EventHandler(this.button2_Click);
             // 
-            // textBox2
+            // WhereTo
             // 
-            this.textBox2.Location = new System.Drawing.Point(52, 56);
-            this.textBox2.Margin = new System.Windows.Forms.Padding(2);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(358, 20);
-            this.textBox2.TabIndex = 2;
+            this.WhereTo.Location = new System.Drawing.Point(52, 56);
+            this.WhereTo.Margin = new System.Windows.Forms.Padding(2);
+            this.WhereTo.Name = "WhereTo";
+            this.WhereTo.Size = new System.Drawing.Size(358, 20);
+            this.WhereTo.TabIndex = 2;
             // 
-            // button1
+            // buttonChoiceFor
             // 
-            this.button1.Location = new System.Drawing.Point(413, 32);
-            this.button1.Margin = new System.Windows.Forms.Padding(2);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(68, 19);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "Выбрать";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.buttonChoiceFor.Location = new System.Drawing.Point(413, 32);
+            this.buttonChoiceFor.Margin = new System.Windows.Forms.Padding(2);
+            this.buttonChoiceFor.Name = "buttonChoiceFor";
+            this.buttonChoiceFor.Size = new System.Drawing.Size(68, 19);
+            this.buttonChoiceFor.TabIndex = 1;
+            this.buttonChoiceFor.Text = "Выбрать";
+            this.buttonChoiceFor.UseVisualStyleBackColor = true;
+            this.buttonChoiceFor.Click += new System.EventHandler(this.button1_Click);
             // 
-            // textBox1
+            // Where
             // 
-            this.textBox1.Location = new System.Drawing.Point(52, 32);
-            this.textBox1.Margin = new System.Windows.Forms.Padding(2);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(358, 20);
-            this.textBox1.TabIndex = 0;
+            this.Where.Location = new System.Drawing.Point(52, 32);
+            this.Where.Margin = new System.Windows.Forms.Padding(2);
+            this.Where.Name = "Where";
+            this.Where.Size = new System.Drawing.Size(358, 20);
+            this.Where.TabIndex = 0;
             // 
             // panel2
             // 
             this.panel2.BackColor = System.Drawing.Color.Gainsboro;
-            this.panel2.Controls.Add(this.button4);
-            this.panel2.Controls.Add(this.label7);
+            this.panel2.Controls.Add(this.buttonDelete);
+            this.panel2.Controls.Add(this.labelTo);
             this.panel2.Controls.Add(this.label8);
-            this.panel2.Controls.Add(this.label6);
+            this.panel2.Controls.Add(this.labelFor);
             this.panel2.Controls.Add(this.label5);
-            this.panel2.Controls.Add(comboBox1);
+            this.panel2.Controls.Add(this.comboBoxFolders);
             this.panel2.Controls.Add(this.label4);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel2.Location = new System.Drawing.Point(0, 0);
@@ -229,26 +238,26 @@
             this.panel2.Size = new System.Drawing.Size(588, 221);
             this.panel2.TabIndex = 0;
             // 
-            // button4
+            // buttonDelete
             // 
-            this.button4.Enabled = false;
-            this.button4.Location = new System.Drawing.Point(9, 136);
-            this.button4.Margin = new System.Windows.Forms.Padding(2);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(75, 25);
-            this.button4.TabIndex = 9;
-            this.button4.Text = "Удалить её";
-            this.button4.UseVisualStyleBackColor = true;
-            this.button4.Click += new System.EventHandler(this.button4_Click);
+            this.buttonDelete.Enabled = false;
+            this.buttonDelete.Location = new System.Drawing.Point(9, 136);
+            this.buttonDelete.Margin = new System.Windows.Forms.Padding(2);
+            this.buttonDelete.Name = "buttonDelete";
+            this.buttonDelete.Size = new System.Drawing.Size(75, 25);
+            this.buttonDelete.TabIndex = 9;
+            this.buttonDelete.Text = "Удалить её";
+            this.buttonDelete.UseVisualStyleBackColor = true;
+            this.buttonDelete.Click += new System.EventHandler(this.button4_Click);
             // 
-            // label7
+            // labelTo
             // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(6, 104);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(16, 13);
-            this.label7.TabIndex = 14;
-            this.label7.Text = "...";
+            this.labelTo.AutoSize = true;
+            this.labelTo.Location = new System.Drawing.Point(6, 104);
+            this.labelTo.Name = "labelTo";
+            this.labelTo.Size = new System.Drawing.Size(16, 13);
+            this.labelTo.TabIndex = 14;
+            this.labelTo.Text = "...";
             // 
             // label8
             // 
@@ -259,14 +268,14 @@
             this.label8.TabIndex = 13;
             this.label8.Text = "Куда копируется:";
             // 
-            // label6
+            // labelFor
             // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(6, 59);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(16, 13);
-            this.label6.TabIndex = 12;
-            this.label6.Text = "...";
+            this.labelFor.AutoSize = true;
+            this.labelFor.Location = new System.Drawing.Point(6, 59);
+            this.labelFor.Name = "labelFor";
+            this.labelFor.Size = new System.Drawing.Size(16, 13);
+            this.labelFor.TabIndex = 12;
+            this.labelFor.Text = "...";
             // 
             // label5
             // 
@@ -277,15 +286,15 @@
             this.label5.TabIndex = 11;
             this.label5.Text = "Откуда копируется:";
             // 
-            // comboBox1
+            // comboBoxFolders
             // 
-            comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            comboBox1.FormattingEnabled = true;
-            comboBox1.Location = new System.Drawing.Point(96, 6);
-            comboBox1.Name = "comboBox1";
-            comboBox1.Size = new System.Drawing.Size(134, 21);
-            comboBox1.TabIndex = 10;
-            comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
+            this.comboBoxFolders.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxFolders.FormattingEnabled = true;
+            this.comboBoxFolders.Location = new System.Drawing.Point(96, 6);
+            this.comboBoxFolders.Name = "comboBoxFolders";
+            this.comboBoxFolders.Size = new System.Drawing.Size(134, 21);
+            this.comboBoxFolders.TabIndex = 10;
+            this.comboBoxFolders.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
             // 
             // label4
             // 
@@ -297,27 +306,68 @@
             this.label4.TabIndex = 9;
             this.label4.Text = "Выберите пару:";
             // 
-            // tabControl1
+            // Choice
             // 
-            this.tabControl1.Controls.Add(this.tabPage1);
-            this.tabControl1.Controls.Add(this.tabPage2);
-            this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tabControl1.Location = new System.Drawing.Point(0, 0);
-            this.tabControl1.Margin = new System.Windows.Forms.Padding(2);
-            this.tabControl1.Name = "tabControl1";
-            this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(600, 366);
-            this.tabControl1.TabIndex = 0;
+            this.Choice.Controls.Add(this.tabPage1);
+            this.Choice.Controls.Add(this.tabPage2);
+            this.Choice.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.Choice.Location = new System.Drawing.Point(0, 0);
+            this.Choice.Margin = new System.Windows.Forms.Padding(2);
+            this.Choice.Name = "Choice";
+            this.Choice.SelectedIndex = 0;
+            this.Choice.Size = new System.Drawing.Size(600, 366);
+            this.Choice.TabIndex = 0;
             // 
-            // Form1
+            // textBoxStreams
+            // 
+            this.textBoxStreams.Location = new System.Drawing.Point(58, 12);
+            this.textBoxStreams.Name = "textBoxStreams";
+            this.textBoxStreams.Size = new System.Drawing.Size(100, 20);
+            this.textBoxStreams.TabIndex = 0;
+            this.textBoxStreams.Text = "5";
+            this.textBoxStreams.TextChanged += new System.EventHandler(this.textBoxStreams_TextChanged);
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(8, 15);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(44, 13);
+            this.label6.TabIndex = 1;
+            this.label6.Text = "Потоки";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(8, 41);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(49, 13);
+            this.label7.TabIndex = 3;
+            this.label7.Text = "Частота";
+            // 
+            // textBoxFrequency
+            // 
+            this.textBoxFrequency.Location = new System.Drawing.Point(58, 38);
+            this.textBoxFrequency.Name = "textBoxFrequency";
+            this.textBoxFrequency.Size = new System.Drawing.Size(100, 20);
+            this.textBoxFrequency.TabIndex = 2;
+            this.textBoxFrequency.Text = "5000";
+            this.textBoxFrequency.TextChanged += new System.EventHandler(this.textBoxFrequency_TextChanged);
+            // 
+            // FormBackup
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.SystemColors.ButtonHighlight;
             this.ClientSize = new System.Drawing.Size(600, 366);
-            this.Controls.Add(this.tabControl1);
+            this.Controls.Add(this.Choice);
             this.Margin = new System.Windows.Forms.Padding(2);
-            this.Name = "Form1";
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+            this.Name = "FormBackup";
             this.Text = "VersionsBackup";
+            this.tabPage2.ResumeLayout(false);
+            this.tabPage2.PerformLayout();
             this.tabPage1.ResumeLayout(false);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
@@ -327,37 +377,41 @@
             this.panel1.PerformLayout();
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
-            this.tabControl1.ResumeLayout(false);
+            this.Choice.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
 
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabControl Choice;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Button buttonChoiceTo;
+        private System.Windows.Forms.TextBox WhereTo;
+        private System.Windows.Forms.Button buttonChoiceFor;
+        private System.Windows.Forms.TextBox Where;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button buttonAdditions;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TextBox textBox3;
+        private System.Windows.Forms.TextBox CoupleName;
 
         #endregion
 
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Button button4;
-        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Button buttonDelete;
+        private System.Windows.Forms.Label labelTo;
         private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Label labelFor;
         private System.Windows.Forms.Label label5;
-        public static System.Windows.Forms.ComboBox comboBox1;
+        public System.Windows.Forms.ComboBox comboBoxFolders;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.TextBox textBoxFrequency;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.TextBox textBoxStreams;
     }
 }
 

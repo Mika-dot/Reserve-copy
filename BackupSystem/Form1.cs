@@ -11,381 +11,139 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 
 namespace BackupSystem
 {
 
-    public partial class Form1 : Form
+    public partial class FormBackup : Form
     {
-        public Form1()
+        public static int StreamsFree = 5; // Количество свободных подпотоков.
+                                           // Это ещё один поток. Он может сразу же, как в основном потоке заполнится биржа,
+                                           //взять из биржи что-то и начать копировать - не дожидаясь, пока чекер пройдется
+                                           // по другим файлам (их может быть много)
+        
+        public static int TimeWatchDog = 5000;
+
+
+        public FormBackup()
         {
             InitializeComponent();
-            jsonDATABASE.LoadJSON();
-            Copying.StartWorking();
+            JSONDatabase.JSONUnload();
+            Copying.WorkingStart();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK) textBox1.Text = folderBrowserDialog1.SelectedPath;
+            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+            {
+                Where.Text = folderBrowserDialog1.SelectedPath;
+            }
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK) textBox2.Text = folderBrowserDialog1.SelectedPath;
+            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+            {
+                WhereTo.Text = folderBrowserDialog1.SelectedPath;
+            }
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
-            if (textBox1.Text.Length == 0)
+            if (Where.Text.Length == 0)
             {
                 MessageBox.Show($"Выберите директорию, откуда копировать!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            if (textBox2.Text.Length == 0)
+            if (WhereTo.Text.Length == 0)
             {
                 MessageBox.Show($"Выберите директорию, куда копировать!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            if (textBox3.Text.Length == 0)
+            if (CoupleName.Text.Length == 0)
             {
                 MessageBox.Show($"Назовите как-нибудь пару!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            if (!Directory.Exists(textBox1.Text))
+            if (!Directory.Exists(Where.Text))
             {
-                MessageBox.Show($"Папки {textBox1.Text} не существует!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Папки {Where.Text} не существует!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            if (!Directory.Exists(textBox2.Text))
+            if (!Directory.Exists(WhereTo.Text))
             {
-                Directory.CreateDirectory(textBox2.Text);
-                //MessageBox.Show($"Папки {textBox2.Text} не существует!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                //return;
+                Directory.CreateDirectory(WhereTo.Text);
             }
-            var t = jsonDATABASE.ListOfCopying.Find(x => x.Name == textBox3.Text);
-            if (t.Name == textBox3.Text)
+
+            JSONDatabase.CopyFolder t = JSONDatabase.ListCopying.Find(x => x.Name == CoupleName.Text);
+            
+            if (t.Name == CoupleName.Text)
             {
-                MessageBox.Show($"Пара {textBox3.Text} уже существует.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Пара {CoupleName.Text} уже существует.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            if (textBox1.Text[textBox1.TextLength - 1] != '\\') textBox1.Text += '\\';
-            if (textBox2.Text[textBox2.TextLength - 1] != '\\') textBox2.Text += '\\';
-            jsonDATABASE.InitNewPair(textBox3.Text, textBox1.Text, textBox2.Text);
-            MessageBox.Show($"Пара '{textBox3.Text}' создана.");
-            textBox1.Text = textBox2.Text = textBox3.Text = "";
+            if (Where.Text[Where.TextLength - 1] != '\\')
+            { 
+                Where.Text += '\\'; 
+            }
+            if (WhereTo.Text[WhereTo.TextLength - 1] != '\\')
+            {
+                WhereTo.Text += '\\';
+            }
+            JSONDatabase.InitNewPair(CoupleName.Text, Where.Text, WhereTo.Text);
+            comboBoxFolders.Items.Add(CoupleName.Text);
+            MessageBox.Show($"Пара '{CoupleName.Text}' создана.");
+            Where.Text = WhereTo.Text = CoupleName.Text = "";
         }
 
         private void button4_Click(object sender, EventArgs e)
         {
             if (MessageBox.Show("Вы уверены?", "Удаление", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
-                var N = comboBox1.SelectedIndex;
-                jsonDATABASE.DeletePair(N);
+                int Number = comboBoxFolders.SelectedIndex;
+                JSONDatabase.RemoveDependencies(Number);
+                comboBoxFolders.Items.RemoveAt(Number);
             }
         }
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var n = comboBox1.SelectedIndex;
-            label6.Text = n == -1 ? "..." : jsonDATABASE.ListOfCopying[n].FromDir;
-            label7.Text = n == -1 ? "..." : jsonDATABASE.ListOfCopying[n].ToDir;
-            button4.Enabled = n > -1;
+            int Number = comboBoxFolders.SelectedIndex;
+            labelFor.Text = Number == -1 ? "..." : JSONDatabase.ListCopying[Number].DirectoryStart;
+            labelTo.Text = Number == -1 ? "..." : JSONDatabase.ListCopying[Number].DirectoryFinish;
+            buttonDelete.Enabled = Number > -1;
         }
-    }
 
-    internal class FileMD5
-    {
-        public static string File512(string path)
+        private void textBoxStreams_TextChanged(object sender, EventArgs e)
         {
-            using (FileStream fs = System.IO.File.OpenRead(path))
+            try
             {
-                MD5 md5 = new MD5CryptoServiceProvider();
-                byte[] fileData = new byte[fs.Length];
-                fs.Read(fileData, 0, (int)fs.Length);
-                byte[] checkSum = md5.ComputeHash(fileData);
-                string result = BitConverter.ToString(checkSum).Replace("-", String.Empty);
-                return result;
-            }
-        }
-        public static string LongFile(string path)
-        {
-            using (var md5 = MD5.Create())
-            {
-                using (var stream = File.OpenRead(path))
+                if (int.Parse(textBoxStreams.Text) > 0)
                 {
-                    string result = BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", String.Empty);
-                    return result;
+                    StreamsFree = int.Parse(textBoxStreams.Text);
                 }
             }
-        }
-    }
-
-    class Copying
-    {
-        static Queue<(string, string)> BIRZHA = new Queue<(string, string)>();
-        //string - откуда
-        //string - куда
-
-        static Thread th, th2;
-
-        public static void StartWorking()
-        {
-            // Здесь запускаем поток.
-            th = new Thread(new ThreadStart(MAIN));
-            th.Start();
-            th2 = new Thread(new ThreadStart(subThreads));
-            th2.Start();
-        }
-
-        static bool FileChanged(string filename, DateTime olddate, long oldsize, string oldhash, out DateTime newdate, out long newsize, out string newhash)
-        {
-            FileInfo inf = new FileInfo(filename);
-            newsize = inf.Length;
-            newhash = FileMD5.LongFile(filename);
-            newdate = File.GetLastWriteTime(filename);
-            if (!File.Exists(filename)) return true;//Файла вообще не существует. 
-            if (newdate > olddate)
+            catch (FormatException ex)
             {
-                if (newsize == oldsize)
+                Console.WriteLine(ex);
+            }
+            
+        }
+
+        private void textBoxFrequency_TextChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (int.Parse(textBoxFrequency.Text) > 0)
                 {
-                    //размер тот же. чекаем хэш
-                    if (newhash == oldhash)
-                    {
-                        //хэш совпал, файл не менялся.
-                        return false;
-                    }
-                    else
-                    {
-                        //хэш разный. файл менялся.
-                        return true;
-                    }
-                }
-                else
-                {
-                    //размер другой. очевидно изменен.
-                    return true;
+                    TimeWatchDog = int.Parse(textBoxFrequency.Text);
                 }
             }
-
-            return false;
-        }
-
-        static void MAIN()
-        {
-            while (true)
+            catch (FormatException ex)
             {
-                Add();
-                CHECKER();
-                Thread.Sleep(5000);
+                Console.WriteLine(ex);
             }
-        }
-
-        static void Add()
-        {
-            for (int j = 0; j < jsonDATABASE.ListOfCopying.Count; j++)
-            {
-                //это список физических файлов
-                var from = jsonDATABASE.ListOfCopying[j].FromDir;
-                var existing = Directory.GetFiles(from, "*", SearchOption.AllDirectories).ToList();
-                //а это из бд
-                var arr = jsonDATABASE.ListOfCopying[j].Files.ToArray();
-                for (int i = 0; i < arr.Length; i++)
-                {
-                    var file = arr[i];
-                    //Console.WriteLine("чекаю файл: " + jsonDATABASE.ListOfCopying[j].FromDir + file.Key);
-                    existing.Remove(from + file.Key);
-                }
-                for (int i = 0; i < existing.Count; i++)
-                {
-                    jsonDATABASE.ListOfCopying[j].Files.Add(existing[i].Substring(from.Length), new jsonDATABASE.FileS()
-                    {
-                        Size = 0,
-                        LastChange = DateTime.MinValue,
-                        Hash = ""
-                    });
-                }
-            }
-        }
-
-        // Основной поток, который обращается к бд и чекает файлы на изменения.
-        static void CHECKER()
-        {
-            for (int j = 0; j < jsonDATABASE.ListOfCopying.Count; j++)
-            {
-                Console.WriteLine("чекаю " + jsonDATABASE.ListOfCopying[j].FromDir);
-                var arr = jsonDATABASE.ListOfCopying[j].Files.ToArray();
-                for (int i = 0; i < arr.Length; i++)
-                {
-                    var file = arr[i];
-                    Console.WriteLine("чекаю файл: " + jsonDATABASE.ListOfCopying[j].FromDir + file.Key);
-                    if (File.Exists(jsonDATABASE.ListOfCopying[j].FromDir + file.Key) && FileChanged(jsonDATABASE.ListOfCopying[j].FromDir + file.Key, file.Value.LastChange, file.Value.Size, file.Value.Hash,
-                            out var newdate, out var newsize, out var newhash))
-                    {
-                        Console.WriteLine("он был изменен.");
-                        var s = jsonDATABASE.ListOfCopying[j].Files[file.Key];
-                        s.LastChange = newdate;
-                        s.Size = newsize;
-                        s.Hash = newhash;
-                        jsonDATABASE.ListOfCopying[j].Files[file.Key] = s;
-                        jsonDATABASE.SaveJSON();
-                        BIRZHA.Enqueue((jsonDATABASE.ListOfCopying[j].FromDir + file.Key, jsonDATABASE.ListOfCopying[j].ToDir + file.Key));
-                    }
-                }
-            }
-            /*
-            // Это должны были быть пары (откуда-куда)
-            //(int id, string from, string to)[] Pairs = new (int, string, string)[32];
-            for (int j = 0; j < Pairs.Length; j++)
-            {
-                // Берем на основании id (из Pairs) новые данные - список файло
-                //(string name, DateTime date, long size, string hash)[] Datas = new (string, DateTime, long, string)[16];
-
-                for (int i = 0; i < Datas.Length; i++)
-                {
-                    // берем конкретную строчку и чекаем ее - смотрим на данные физического файла
-                    //и сверяем с данными из бд.
-                    //т.к. имя файла в бд хранится относительное (относительно корневого каталога)
-                    //то пишется "Pairs[j].from + " или "Pairs[j].to + "
-                    if (FileChanged(Pairs[j].from + Datas[i].name, Datas[i].date, Datas[i].size, Datas[i].hash,
-                        out var newdate, out var newsize, out var newhash))
-                    {
-                        // Файл был изменен. Добавляем пути файлов в биржу, чтоб они потом скопировались.
-                        BIRZHA.Enqueue((Pairs[j].from + Datas[i].name, Pairs[j].to + Datas[i].name));
-                        //Console.WriteLine("новая дата: " + newdate);
-                        //Console.WriteLine("новый размер: " + newsize);
-                        //Console.WriteLine("новый хэш: " + newhash);
-                    }
-
-                }
-
-            }
-            */
-        }
-
-        static int FreeThreads = 5; // Количество свободных подпотоков.
-                                    // Это ещё один поток. Он может сразу же, как в основном потоке заполнится биржа,
-                                    //взять из биржи что-то и начать копировать - не дожидаясь, пока чекер пройдется
-                                    // по другим файлам (их может быть много)
-        static void subThreads()
-        {
-            while (true)
-            {
-                if (FreeThreads > 0 && BIRZHA.Count > 0)
-                {
-                    var g = BIRZHA.Dequeue();
-                    FreeThreads--;
-                    var thr = new Thread(new ParameterizedThreadStart(threadToCopy));
-                    thr.Start((object)(new string[] { g.Item1, g.Item2 }));
-                }
-            }
-
-            void threadToCopy(object arg)
-            {
-                var ss = (arg as string[]);
-                if (!Directory.Exists(Path.GetDirectoryName(ss[1])))
-                    Directory.CreateDirectory(Path.GetDirectoryName(ss[1]));
-                if (File.Exists(ss[1])) File.Delete(ss[1]);
-                File.Copy(ss[0], ss[1]);
-                FreeThreads++;
-            }
-
-        }
-
-    }
-
-    class jsonDATABASE
-    {
-        public static List<CopyCell> ListOfCopying = new List<CopyCell>();
-
-        public static void LoadJSON()
-        {
-            if (!File.Exists("database.json")) File.WriteAllText("database.json", "[]");
-            ListOfCopying = JsonConvert.DeserializeObject<List<CopyCell>>(File.ReadAllText("database.json"));
-            for (int i = 0; i < ListOfCopying.Count; i++) Form1.comboBox1.Items.Add(ListOfCopying[i].Name);
-        }
-
-        public static void SaveJSON() => File.WriteAllText("database.json", JsonConvert.SerializeObject(ListOfCopying, Formatting.Indented));
-
-        // Не дописано
-        public static void FULLCopy(string From, string To, bool TotalRewrite = false)
-        {
-            var files = Directory.GetFiles(From, "*", SearchOption.AllDirectories);
-            for (int i = 0; i < files.Length; i++)
-            {
-                var file = files[i].Substring(From.Length);
-                Console.WriteLine("Копируем файл: " + file);
-                if (!File.Exists(To + file))
-                {
-                    File.Copy(From + file, To + file);
-                }
-                else
-                {
-                    if (TotalRewrite)
-                    {
-
-                    }
-                }
-            }
-
-        }
-        public static void UpdateTODirs(string From, string To)
-        {
-            var dirs = Directory.GetDirectories(From, "*", SearchOption.AllDirectories);
-            for (int i = 0; i < dirs.Length; i++)
-            {
-                var dir = dirs[i].Substring(From.Length);
-                Console.WriteLine("Нужная поддиректория: " + dir);
-                if (!Directory.Exists(To + dir)) Directory.CreateDirectory(To + dir);
-            }
-        }
-        public static CopyCell InitNewPair(string Name, string From, string To)
-        {
-            UpdateTODirs(From, To);
-            var files = Directory.GetFiles(From, "*", SearchOption.AllDirectories);
-            var cell = new CopyCell();
-            cell.Name = Name;
-            cell.FromDir = From;
-            cell.ToDir = To;
-            cell.Files = new Dictionary<string, FileS>();
-            for (int i = 0; i < files.Length; i++)
-            {
-                FileInfo inf = new FileInfo(files[i]);
-                cell.Files.Add(files[i].Substring(From.Length), new FileS()
-                {
-                    Size = inf.Length,
-                    Hash = FileMD5.LongFile(files[i]),
-                    LastChange = inf.LastWriteTime
-                });
-            }
-            ListOfCopying.Add(cell);
-            Form1.comboBox1.Items.Add(Name);
-            FULLCopy(From, To);
-            SaveJSON();
-            return cell;
-        }
-
-        public static void DeletePair(int N)
-        {
-            Form1.comboBox1.Items.RemoveAt(N);
-            ListOfCopying.RemoveAt(N);
-            SaveJSON();
-        }
-
-        public struct CopyCell
-        {
-            [JsonProperty]
-            public string Name, FromDir, ToDir;
-            [JsonProperty]
-            public Dictionary<string, FileS> Files;
-        }
-        public struct FileS
-        {
-            [JsonProperty]
-            public long Size;
-            [JsonProperty]
-            public string Hash;
-            [JsonProperty]
-            public DateTime LastChange;
         }
     }
 
