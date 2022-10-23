@@ -15,7 +15,7 @@ namespace BackupSystem
         //string - куда
 
         static Thread ThreadFullCheck, ThreadSrteamCopy;
-
+        public static bool WannaWork = true;
         public static void WorkingStart()
         {
             // Здесь запускаем поток.
@@ -59,7 +59,7 @@ namespace BackupSystem
 
         static void FullCheck()
         {
-            while (true)
+            while (WannaWork)
             {
                 AddDatabase();
                 WatchDog();
@@ -105,7 +105,7 @@ namespace BackupSystem
                 {
                     KeyValuePair<string, JSONDatabase.Files> FileCom = ListComponent[i];
                     Console.WriteLine("чекаю файл: " + JSONDatabase.ListCopying[j].DirectoryStart + FileCom.Key);
-                    if (File.Exists(JSONDatabase.ListCopying[j].DirectoryStart + FileCom.Key) && FileChanged(JSONDatabase.ListCopying[j].DirectoryStart + FileCom.Key, FileCom.Value.LastTimeChange, FileCom.Value.Size, FileCom.Value.Hash,
+                    if (!FileCom.Value.IsIgnored && File.Exists(JSONDatabase.ListCopying[j].DirectoryStart + FileCom.Key) && FileChanged(JSONDatabase.ListCopying[j].DirectoryStart + FileCom.Key, FileCom.Value.LastTimeChange, FileCom.Value.Size, FileCom.Value.Hash,
                             out var newdate, out var newsize, out var newhash))
                     {
                         Console.WriteLine("он был изменен.");
@@ -122,7 +122,7 @@ namespace BackupSystem
         }
         static void SrteamCopy()
         {
-            while (true)
+            while (WannaWork)
             {
                 if (FormBackup.StreamsFree > 0 && Birzha.Count > 0)
                 {

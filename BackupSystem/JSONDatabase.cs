@@ -81,6 +81,8 @@ namespace BackupSystem
         public struct Files
         {
             [JsonProperty]
+            public bool IsIgnored;
+            [JsonProperty]
             public long Size;
             [JsonProperty]
             public string Hash;

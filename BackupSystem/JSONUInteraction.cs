@@ -20,7 +20,7 @@ namespace BackupSystem
             ListCopying = JsonConvert.DeserializeObject<List<CopyFolder>>(File.ReadAllText("database.json"));
             for (int i = 0; i < ListCopying.Count; i++)
             {
-                //Form1.comboBox1.Items.Add(ListCopying[i].Name); // допилить
+                FormBackup.link1.Items.Add(ListCopying[i].Name); // допилить
             }
         }
         public static void JSONUpdates()

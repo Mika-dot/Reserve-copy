@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Win32;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using static System.Windows.Forms.LinkLabel;
 
 namespace BackupSystem
 {
@@ -25,10 +27,13 @@ namespace BackupSystem
         
         public static int TimeWatchDog = 5000;
 
+        public static ComboBox link1;
+
 
         public FormBackup()
         {
             InitializeComponent();
+            link1 = this.comboBoxFolders;
             JSONDatabase.JSONUnload();
             Copying.WorkingStart();
         }
@@ -104,6 +109,7 @@ namespace BackupSystem
                 int Number = comboBoxFolders.SelectedIndex;
                 JSONDatabase.RemoveDependencies(Number);
                 comboBoxFolders.Items.RemoveAt(Number);
+                if (comboBoxFolders.Items.Count == 0) comboBox1_SelectedIndexChanged(null, null);
             }
         }
 
@@ -113,6 +119,24 @@ namespace BackupSystem
             labelFor.Text = Number == -1 ? "..." : JSONDatabase.ListCopying[Number].DirectoryStart;
             labelTo.Text = Number == -1 ? "..." : JSONDatabase.ListCopying[Number].DirectoryFinish;
             buttonDelete.Enabled = Number > -1;
+            comboBoxFilesList.Items.Clear();
+            if (Number > -1) comboBoxFilesList.Items.AddRange(JSONDatabase.ListCopying[Number].Files.Keys.ToArray());
+            comboBoxFilesList_SelectedIndexChanged(null, null);
+        }
+        private void comboBoxFilesList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            deleteFileFromDB.Enabled = comboBoxFilesList.Items.Count > 0 && comboBoxFilesList.SelectedIndex > -1;
+        }
+        private void deleteFileFromDB_Click(object sender, EventArgs e)
+        {
+            var item = comboBoxFilesList.SelectedItem.ToString();
+            comboBoxFilesList.Items.RemoveAt(comboBoxFilesList.SelectedIndex);
+            MessageBox.Show($"Файл '{item}' будет игнорироваться при копировании.");
+            var c = JSONDatabase.ListCopying[comboBoxFolders.SelectedIndex].Files[item];
+            c.IsIgnored = true;
+            JSONDatabase.ListCopying[comboBoxFolders.SelectedIndex].Files[item] = c;
+            JSONDatabase.JSONUpdates();
+            comboBoxFilesList_SelectedIndexChanged(null, null);
         }
 
         private void textBoxStreams_TextChanged(object sender, EventArgs e)
@@ -145,6 +169,20 @@ namespace BackupSystem
                 Console.WriteLine(ex);
             }
         }
+
+        private void AutostartOn_Click(object sender, EventArgs e)
+        {
+            RegistryKey rkApp = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+            rkApp.SetValue("BackupSystem", Application.ExecutablePath.ToString());
+        }
+
+        private void AutostartOff_Click(object sender, EventArgs e)
+        {
+            RegistryKey rkApp = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+            rkApp.DeleteValue("BackupSystem", false);
+        }
+
+        private void FormBackup_FormClosing(object sender, FormClosingEventArgs e) => Copying.WannaWork = false;
     }
 
 }
