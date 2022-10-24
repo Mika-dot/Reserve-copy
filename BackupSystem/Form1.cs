@@ -35,7 +35,6 @@ namespace BackupSystem
             InitializeComponent();
             link1 = this.comboBoxFolders;
             JSONDatabase.JSONUnload();
-            Copying.WorkingStart();
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -121,6 +120,7 @@ namespace BackupSystem
             buttonDelete.Enabled = Number > -1;
             comboBoxFilesList.Items.Clear();
             if (Number > -1) comboBoxFilesList.Items.AddRange(JSONDatabase.ListCopying[Number].Files.Keys.ToArray());
+            if (Number > -1) numericUpDown1.Value = JSONDatabase.ListCopying[Number].Minutes;
             comboBoxFilesList_SelectedIndexChanged(null, null);
         }
         private void comboBoxFilesList_SelectedIndexChanged(object sender, EventArgs e)
@@ -183,6 +183,32 @@ namespace BackupSystem
         }
 
         private void FormBackup_FormClosing(object sender, FormClosingEventArgs e) => Copying.WannaWork = false;
+
+        private void LaunchButt_Click(object sender, EventArgs e)
+        {
+            Copying.WannaWork = true;
+            Copying.WorkingStart();
+            LaunchButt.Enabled = false;
+            button1.Enabled = true;
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            Copying.WannaWork = false;
+            LaunchButt.Enabled = true;
+            button1.Enabled = false;
+        }
+
+        private void numericUpDown1_ValueChanged(object sender, EventArgs e)
+        {
+            if (comboBoxFolders.SelectedIndex > -1)
+            {
+                var c = JSONDatabase.ListCopying[comboBoxFolders.SelectedIndex];
+                c.Minutes = (int)numericUpDown1.Value;
+                JSONDatabase.ListCopying[comboBoxFolders.SelectedIndex] = c;
+                JSONDatabase.JSONUpdates();
+            }
+        }
     }
 
 }

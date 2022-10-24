@@ -10,9 +10,8 @@ namespace BackupSystem
 {
     public class Copying
     {
-        static Queue<(string, string)> Birzha = new Queue<(string, string)>();
-        //string - откуда
-        //string - куда
+        static Queue<(string, string, int, string)> Birzha = new Queue<(string, string, int, string)>();
+        //static Queue<(string, string)> BirzhaBackup = new Queue<(string, string)>();
 
         static Thread ThreadFullCheck, ThreadSrteamCopy;
         public static bool WannaWork = true;
@@ -63,6 +62,7 @@ namespace BackupSystem
             {
                 AddDatabase();
                 WatchDog();
+                //DeleteDatabase();
                 Thread.Sleep(FormBackup.TimeWatchDog);
             }
         }
@@ -93,20 +93,55 @@ namespace BackupSystem
                 }
             }
         }
+        /*
+        static void DeleteDatabase()
+        {
+            for (int j = 0; j < JSONDatabase.ListCopying.Count; j++)
+            {
+                //это список физических файлов
+                string From = JSONDatabase.ListCopying[j].DirectoryStart;
+                List<string> ExistingActual = Directory.GetFiles(From, "*", SearchOption.AllDirectories).ToList();
+                //а это из бд
+                KeyValuePair<string, JSONDatabase.Files>[] ExistingDatabas = JSONDatabase.ListCopying[j].Files.ToArray();
+
+                for (int i = 0; i < ExistingDatabas.Length; i++)
+                {
+                    KeyValuePair<string, JSONDatabase.Files> FileDifferences = ExistingDatabas[i];
+                    //Console.WriteLine("чекаю файл: " + JSONDatabase.ListOfCopying[j].FromDir + file.Key);
+                    ExistingActual.Remove(From + FileDifferences.Key);
+                }
+
+                for (int i = 0; i < ExistingActual.Count; i++)
+                {
+                    JSONDatabase.ListCopying[j].Files.Add(ExistingActual[i].Substring(From.Length), new JSONDatabase.Files()
+                    {
+                        Size = 0,
+                        LastTimeChange = DateTime.MinValue,
+                        Hash = ""
+                    });
+                }
+            }
+        }
+        */
 
         // Основной поток, который обращается к бд и чекает файлы на изменения.
         static void WatchDog()
         {
             for (int j = 0; j < JSONDatabase.ListCopying.Count; j++)
             {
+                if (JSONDatabase.ListCopying[j].LastTime.AddMinutes(JSONDatabase.ListCopying[j].Minutes) > DateTime.Now) continue;
+                var c = JSONDatabase.ListCopying[j];
+                c.LastTime = DateTime.Now;
+                JSONDatabase.ListCopying[j] = c;
                 Console.WriteLine("чекаю " + JSONDatabase.ListCopying[j].DirectoryStart);
                 KeyValuePair<string, JSONDatabase.Files>[] ListComponent = JSONDatabase.ListCopying[j].Files.ToArray();
                 for (int i = 0; i < ListComponent.Length; i++)
                 {
                     KeyValuePair<string, JSONDatabase.Files> FileCom = ListComponent[i];
                     Console.WriteLine("чекаю файл: " + JSONDatabase.ListCopying[j].DirectoryStart + FileCom.Key);
-                    if (!FileCom.Value.IsIgnored && File.Exists(JSONDatabase.ListCopying[j].DirectoryStart + FileCom.Key) && FileChanged(JSONDatabase.ListCopying[j].DirectoryStart + FileCom.Key, FileCom.Value.LastTimeChange, FileCom.Value.Size, FileCom.Value.Hash,
-                            out var newdate, out var newsize, out var newhash))
+                    if (!FileCom.Value.IsIgnored && File.Exists(JSONDatabase.ListCopying[j].DirectoryStart + FileCom.Key) &&
+                        (FileChanged(JSONDatabase.ListCopying[j].DirectoryStart + FileCom.Key, FileCom.Value.LastTimeChange, FileCom.Value.Size, FileCom.Value.Hash,
+                            out var newdate, out var newsize, out var newhash) || JSONDatabase.ListCopying[j].Files[FileCom.Key].StartedCopy))
                     {
                         Console.WriteLine("он был изменен.");
                         JSONDatabase.Files Component = JSONDatabase.ListCopying[j].Files[FileCom.Key];
@@ -115,7 +150,14 @@ namespace BackupSystem
                         Component.Hash = newhash;
                         JSONDatabase.ListCopying[j].Files[FileCom.Key] = Component;
                         JSONDatabase.JSONUpdates();
-                        Birzha.Enqueue((JSONDatabase.ListCopying[j].DirectoryStart + FileCom.Key, JSONDatabase.ListCopying[j].DirectoryFinish + FileCom.Key));
+                        //var n = j;
+                        Birzha.Enqueue(
+                            (JSONDatabase.ListCopying[j].DirectoryStart + FileCom.Key,
+                            JSONDatabase.ListCopying[j].DirectoryFinish + FileCom.Key,
+                            j, FileCom.Key
+                            ));
+
+                        //File.WriteAllLines("log.txt", Birzha.Select(x => x.From + "\n" + x.To + "\n").ToArray());
                     }
                 }
             }
@@ -126,25 +168,33 @@ namespace BackupSystem
             {
                 if (FormBackup.StreamsFree > 0 && Birzha.Count > 0)
                 {
-                    (string, string) g = Birzha.Dequeue();
+                    (string, string, int, string) g = Birzha.Dequeue();
                     FormBackup.StreamsFree--;
+                    var c = JSONDatabase.ListCopying[g.Item3].Files[g.Item4];
+                    c.StartedCopy = true;
+                    JSONDatabase.ListCopying[g.Item3].Files[g.Item4] = c;
+                    JSONDatabase.JSONUpdates();
                     Thread Thread = new Thread(new ParameterizedThreadStart(ThreadToCopy));
-                    Thread.Start((object)(new string[] { g.Item1, g.Item2 }));
+                    Thread.Start((object)(new object[] { g.Item1, g.Item2, g.Item3, g.Item4 }));
                 }
             }
 
             void ThreadToCopy(object arg)
             {
-                string[] DirectoryStartFinish = (arg as string[]);
-                if (!Directory.Exists(Path.GetDirectoryName(DirectoryStartFinish[1])))
+                object[] DirectoryStartFinish = (arg as object[]);
+                if (!Directory.Exists(Path.GetDirectoryName(DirectoryStartFinish[1].ToString())))
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(DirectoryStartFinish[1]));
+                    Directory.CreateDirectory(Path.GetDirectoryName(DirectoryStartFinish[1].ToString()));
                 }
-                if (File.Exists(DirectoryStartFinish[1]))
+                if (File.Exists(DirectoryStartFinish[1].ToString()))
                 {
-                    File.Delete(DirectoryStartFinish[1]);
+                    File.Delete(DirectoryStartFinish[1].ToString());
                 }
-                File.Copy(DirectoryStartFinish[0], DirectoryStartFinish[1]);
+                File.Copy(DirectoryStartFinish[0].ToString(), DirectoryStartFinish[1].ToString());
+                var c = JSONDatabase.ListCopying[(int)DirectoryStartFinish[2]].Files[(string)DirectoryStartFinish[3]];
+                c.StartedCopy = false;
+                JSONDatabase.ListCopying[(int)DirectoryStartFinish[2]].Files[(string)DirectoryStartFinish[3]] = c;
+                JSONDatabase.JSONUpdates();
                 FormBackup.StreamsFree++;
             }
 

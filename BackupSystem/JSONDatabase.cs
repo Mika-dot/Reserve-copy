@@ -46,6 +46,8 @@ namespace BackupSystem
             string[] Folders = Directory.GetFiles(DirectoryStart, "*", SearchOption.AllDirectories);
             CopyFolder Cell = new CopyFolder();
             Cell.Name = FileName;
+            Cell.LastTime = DateTime.MinValue;
+            Cell.Minutes = 5;
             Cell.DirectoryStart = DirectoryStart;
             Cell.DirectoryFinish = DirectoryFinish;
             Cell.Files = new Dictionary<string, Files>();
@@ -76,12 +78,16 @@ namespace BackupSystem
             [JsonProperty]
             public string Name, DirectoryStart, DirectoryFinish;
             [JsonProperty]
+            public DateTime LastTime;
+            [JsonProperty]
+            public int Minutes;
+            [JsonProperty]
             public Dictionary<string, Files> Files;
         }
         public struct Files
         {
             [JsonProperty]
-            public bool IsIgnored;
+            public bool IsIgnored, StartedCopy;
             [JsonProperty]
             public long Size;
             [JsonProperty]
