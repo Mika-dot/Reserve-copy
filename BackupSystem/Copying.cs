@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace BackupSystem
 {
@@ -62,7 +63,7 @@ namespace BackupSystem
             {
                 AddDatabase();
                 WatchDog();
-                //DeleteDatabase();
+                DeleteDatabase();
                 Thread.Sleep(FormBackup.TimeWatchDog);
             }
         }
@@ -93,36 +94,31 @@ namespace BackupSystem
                 }
             }
         }
-        /*
+        
         static void DeleteDatabase()
         {
             for (int j = 0; j < JSONDatabase.ListCopying.Count; j++)
             {
                 //это список физических файлов
                 string From = JSONDatabase.ListCopying[j].DirectoryStart;
-                List<string> ExistingActual = Directory.GetFiles(From, "*", SearchOption.AllDirectories).ToList();
+                string To = JSONDatabase.ListCopying[j].DirectoryFinish;
+                //List<string> ExistingActual = Directory.GetFiles(From, "*", SearchOption.AllDirectories).ToList();
                 //а это из бд
                 KeyValuePair<string, JSONDatabase.Files>[] ExistingDatabas = JSONDatabase.ListCopying[j].Files.ToArray();
-
+                bool b = false;
                 for (int i = 0; i < ExistingDatabas.Length; i++)
                 {
-                    KeyValuePair<string, JSONDatabase.Files> FileDifferences = ExistingDatabas[i];
-                    //Console.WriteLine("чекаю файл: " + JSONDatabase.ListOfCopying[j].FromDir + file.Key);
-                    ExistingActual.Remove(From + FileDifferences.Key);
+                    if (!File.Exists(From + ExistingDatabas[i].Key) && ExistingDatabas[i].Value.WasCopiedOnce)
+					{
+						JSONDatabase.ListCopying[j].Files.Remove(ExistingDatabas[i].Key);
+                        b = true;
+                        if (File.Exists(To + ExistingDatabas[i].Key)) File.Delete(To + ExistingDatabas[i].Key);
+					}
                 }
-
-                for (int i = 0; i < ExistingActual.Count; i++)
-                {
-                    JSONDatabase.ListCopying[j].Files.Add(ExistingActual[i].Substring(From.Length), new JSONDatabase.Files()
-                    {
-                        Size = 0,
-                        LastTimeChange = DateTime.MinValue,
-                        Hash = ""
-                    });
-                }
+                if (b) JSONDatabase.JSONUpdates();
             }
         }
-        */
+        
 
         // Основной поток, который обращается к бд и чекает файлы на изменения.
         static void WatchDog()
@@ -193,6 +189,7 @@ namespace BackupSystem
                 File.Copy(DirectoryStartFinish[0].ToString(), DirectoryStartFinish[1].ToString());
                 var c = JSONDatabase.ListCopying[(int)DirectoryStartFinish[2]].Files[(string)DirectoryStartFinish[3]];
                 c.StartedCopy = false;
+                c.WasCopiedOnce = true;
                 JSONDatabase.ListCopying[(int)DirectoryStartFinish[2]].Files[(string)DirectoryStartFinish[3]] = c;
                 JSONDatabase.JSONUpdates();
                 FormBackup.StreamsFree++;

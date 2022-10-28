@@ -58,7 +58,8 @@ namespace BackupSystem
                 {
                     Size = FileOptions.Length,
                     Hash = FileMD5.LongFile(Folders[i]),
-                    LastTimeChange = FileOptions.LastWriteTime
+                    LastTimeChange = FileOptions.LastWriteTime,
+                    WasCopiedOnce = true
                 });
             }
             ListCopying.Add(Cell);
@@ -87,7 +88,7 @@ namespace BackupSystem
         public struct Files
         {
             [JsonProperty]
-            public bool IsIgnored, StartedCopy;
+            public bool IsIgnored, StartedCopy, WasCopiedOnce;
             [JsonProperty]
             public long Size;
             [JsonProperty]
