@@ -1,0 +1,16 @@
+C:\Users\TrushinVlad\source\repos\VideoWatcher\VideoWatcher\bin\Debug\VideoWatcher.exe.config
+C:\Users\TrushinVlad\source\repos\VideoWatcher\VideoWatcher\bin\Debug\VideoWatcher.exe
+C:\Users\TrushinVlad\source\repos\VideoWatcher\VideoWatcher\bin\Debug\VideoWatcher.pdb
+C:\Users\TrushinVlad\source\repos\VideoWatcher\VideoWatcher\obj\Debug\VideoWatcher.csproj.AssemblyReference.cache
+C:\Users\TrushinVlad\source\repos\VideoWatcher\VideoWatcher\obj\Debug\VideoWatcher.csproj.SuggestedBindingRedirects.cache
+C:\Users\TrushinVlad\source\repos\VideoWatcher\VideoWatcher\obj\Debug\MainWindow.g.cs
+C:\Users\TrushinVlad\source\repos\VideoWatcher\VideoWatcher\obj\Debug\App.g.cs
+C:\Users\TrushinVlad\source\repos\VideoWatcher\VideoWatcher\obj\Debug\VideoWatcher_MarkupCompile.cache
+C:\Users\TrushinVlad\source\repos\VideoWatcher\VideoWatcher\obj\Debug\VideoWatcher_MarkupCompile.lref
+C:\Users\TrushinVlad\source\repos\VideoWatcher\VideoWatcher\obj\Debug\MainWindow.baml
+C:\Users\TrushinVlad\source\repos\VideoWatcher\VideoWatcher\obj\Debug\VideoWatcher.g.resources
+C:\Users\TrushinVlad\source\repos\VideoWatcher\VideoWatcher\obj\Debug\VideoWatcher.Properties.Resources.resources
+C:\Users\TrushinVlad\source\repos\VideoWatcher\VideoWatcher\obj\Debug\VideoWatcher.csproj.GenerateResource.cache
+C:\Users\TrushinVlad\source\repos\VideoWatcher\VideoWatcher\obj\Debug\VideoWatcher.csproj.CoreCompileInputs.cache
+C:\Users\TrushinVlad\source\repos\VideoWatcher\VideoWatcher\obj\Debug\VideoWatcher.exe
+C:\Users\TrushinVlad\source\repos\VideoWatcher\VideoWatcher\obj\Debug\VideoWatcher.pdb
