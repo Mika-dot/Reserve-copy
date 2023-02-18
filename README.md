@@ -35,8 +35,15 @@
 
 ---
 
+## Основная вкладка
+
 Основная форма представляет две вкладки.
 На первой вкладке два блока.
+
+<p align="center">
+  <img src="https://github.com/Mika-dot/Reserve-copy/blob/main/Media/Basic.PNG?raw=true"/>
+</p>
+
 1. Новые связи.
 Здесь можно добовлять новые папки для синхронизации.
 В поле "Имя пары" необходимо вести подложное имя синхронизаций папок.
@@ -60,12 +67,6 @@
 
 <p align="center">
   <img src="https://github.com/Mika-dot/Reserve-copy/blob/main/Media/SystemSettings.PNG?raw=true"/>
-</p>
-
----
-
-<p align="center">
-  <img src="https://github.com/Mika-dot/Reserve-copy/blob/main/Media/Basic.PNG?raw=true"/>
 </p>
 
 ---
